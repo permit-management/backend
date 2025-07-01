@@ -12,12 +12,12 @@ import (
 
 // TagRepository interface to be implemented by repository
 type TagRepository interface {
-	GetTag(id string) (*domain.TagModel, error)
+	GetTag(id uint) (*domain.TagModel, error)
 	GetTagList(pager *app.Pager) ([]*domain.TagModel, error)
 	CountTag(pager *app.Pager) (int64, error)
 	CreateTag(name string) (*domain.TagModel, error)
-	UpdateTag(id string, name string) (*domain.TagModel, error)
-	DeleteTag(id string) error
+	UpdateTag(id uint, name string) (*domain.TagModel, error)
+	DeleteTag(id uint) error
 }
 
 type tagRepository struct {
@@ -41,9 +41,9 @@ func (r *tagRepository) searchCriteria(db *gorm.DB) app.SearchCriteria {
 	}
 }
 
-func (d *tagRepository) GetTag(id string) (*domain.TagModel, error) {
+func (d *tagRepository) GetTag(id uint) (*domain.TagModel, error) {
 	var tag = &domain.TagModel{
-		Model: &domain.Model{ID: id},
+		Model: domain.Model{ID: id},
 	}
 	err := d.db.First(&tag).Error
 	if err != nil {
@@ -82,7 +82,7 @@ func (d *tagRepository) CreateTag(name string) (*domain.TagModel, error) {
 	return &tag, nil
 }
 
-func (d *tagRepository) UpdateTag(id string, name string) (*domain.TagModel, error) {
+func (d *tagRepository) UpdateTag(id uint, name string) (*domain.TagModel, error) {
 	values := map[string]any{}
 	if name != "" {
 		values["name"] = name
@@ -100,6 +100,6 @@ func (d *tagRepository) UpdateTag(id string, name string) (*domain.TagModel, err
 	return &tag, nil
 }
 
-func (d *tagRepository) DeleteTag(id string) error {
-	return d.db.Delete(&domain.TagModel{Model: &domain.Model{ID: id}}).Error
+func (d *tagRepository) DeleteTag(id uint) error {
+	return d.db.Delete(&domain.TagModel{Model: domain.Model{ID: id}}).Error
 }

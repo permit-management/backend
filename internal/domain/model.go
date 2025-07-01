@@ -17,8 +17,8 @@ const (
 
 // Basic type for all models. https://gorm.io/docs/models.html
 type Model struct {
-	ID string `json:"id" gorm:"type:uuid;primaryKey;default:uuid_generate_v4()"`
-	// ID uint `json:"id" gorm:"primaryKey"`
+	// ID string `json:"id" gorm:"type:uuid;primaryKey;default:uuid_generate_v4()"`
+	ID uint `json:"id" gorm:"primaryKey"`
 	CreatedBy string     `json:"created_by"`
 	UpdatedBy *string    `json:"updated_by" gorm:"<-:update"`
 	DeletedBy *string    `json:"deleted_by,omitempty" gorm:"<-:update"`

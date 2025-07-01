@@ -10,6 +10,7 @@ import (
 	"github.com/permit-management/backend/internal/domain"
 	"github.com/permit-management/backend/internal/service"
 	"github.com/permit-management/backend/pkg/app"
+	"github.com/permit-management/backend/pkg/convert"
 	_ "github.com/permit-management/backend/pkg/errcode"
 	"github.com/permit-management/backend/pkg/logger"
 
@@ -43,7 +44,7 @@ func (h *tagHandler) List(c *gin.Context) {
 }
 
 func (h *tagHandler) Get(c *gin.Context) {
-	param := constants.IDRequest{ID: c.Param("id")}
+	param := constants.IDRequest{ID: uint(convert.StrTo(c.Param("id")).MustInt())}
 	response := app.NewResponse(c)
 	if app.Validation(c, &param, response, false) != nil {
 		return
@@ -81,7 +82,7 @@ func (h *tagHandler) Create(c *gin.Context) {
 
 func (h *tagHandler) Update(c *gin.Context) {
 	param := service.UpdateTagRequest{
-		ID: c.Param("id"),
+		ID: uint(convert.StrTo(c.Param("id")).MustInt()),
 	}
 	response := app.NewResponse(c)
 	if app.Validation(c, &param, response, true) != nil {
@@ -102,7 +103,7 @@ func (h *tagHandler) Update(c *gin.Context) {
 
 func (h *tagHandler) Delete(c *gin.Context) {
 	param := constants.IDRequest{
-		ID: c.Param("id"),
+		ID: uint(convert.StrTo(c.Param("id")).MustInt()),
 	}
 	response := app.NewResponse(c)
 	if app.Validation(c, &param, response, true) != nil {
