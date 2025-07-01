@@ -1,0 +1,13 @@
+vendor/
+_*
+*.test
+.DS_Store
+bin/
+var/
+logs/
+*.out
+scripts/load-testing/output.bin
+tmp/
+config.yml
+internal/server/docs/
+.env

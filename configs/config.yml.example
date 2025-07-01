@@ -1,0 +1,33 @@
+App:
+  RunMode: release
+  HTTPPort: 8080
+  ReadTimeout: 30s
+  WriteTimeout: 30s
+  DefaultPageSize: 25
+  MaxPageSize: 100
+  ServerShutdownTimeout: 10s
+  Listen: 127.0.0.1
+Log:
+  LogSavePath: logs
+  LogFileName: application.log
+  Level: info
+  MaxSize: 10
+  MaxBackups: 5
+  Compress: False
+Database:
+  Username: postgres
+  Password: password
+  Host: 127.0.0.1
+  Port: 5432
+  DBName: DBNAME
+  Schema: "db_schema"
+  Charset: utf8
+  ParseTime: True
+  MaxIdleConns: 10
+  MaxOpenConns: 30
+  MigrationURL: "file://db/migration"
+Ratelimit:
+  Enable: True
+  ConfigFile: sentinel.yml
+  CPULoadThresh: 0
+  CPULoadStrategy: -1 # 0: BBR, -1: NoAdaptive
