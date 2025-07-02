@@ -15,7 +15,7 @@ func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
 
-	apiv1 := r.Group("/api/v1/permit-management")
+	apiv1 := r.Group("/api/v1/permit")
 	// apiv1.Use(middleware.Authenticated())
 
 	var tagHandler = v1.NewTagHandler(db, cfg)

@@ -1,5 +1,5 @@
 package constants
 
 type IDRequest struct {
-	ID string `json:"id" binding:"required"`
+	ID uint `json:"id" binding:"required"`
 }

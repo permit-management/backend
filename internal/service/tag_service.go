@@ -18,7 +18,7 @@ type CreateTagRequest struct {
 }
 
 type UpdateTagRequest struct {
-	ID   string `json:"id" binding:"required"`
+	ID   uint   `json:"id" binding:"required"`
 	Name string `json:"name" binding:"max=100"`
 }
 

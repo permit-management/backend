@@ -1,15 +1,15 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp" SCHEMA public;
 CREATE TABLE IF NOT EXISTS blog_tag (
-    id uuid PRIMARY KEY DEFAULT public.uuid_generate_v4(),
+    id INTEGER auto_increment NOT NULL,
     name VARCHAR(100) DEFAULT '',
     created_by VARCHAR(100) DEFAULT '',
     updated_by VARCHAR(100),
     deleted_by VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP,
-    deleted_at TIMESTAMP
+    deleted_at TIMESTAMP,
+    CONSTRAINT blog_tags_pk PRIMARY KEY (id)
 );
 -- +goose StatementEnd
 
