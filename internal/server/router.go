@@ -26,4 +26,11 @@ func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
 	tags.GET("", tagHandler.List)
 	tags.GET("/:id", tagHandler.Get)
 
+	userHandler := v1.NewUserHandler(db, cfg)
+	users := apiv1.Group("/users")
+	users.POST("", userHandler.Create)
+	users.GET("", userHandler.List)
+	users.GET("/:id", userHandler.Get)
+	users.PUT("/:id", userHandler.Update)
+	users.DELETE("/:id", userHandler.Delete)
 }
