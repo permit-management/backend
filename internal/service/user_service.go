@@ -12,15 +12,17 @@ import (
 )
 
 type CreateUserRequest struct {
-	Username string `json:"username" binding:"required"`
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,min=6"`
+	Username    string `json:"name" binding:"required"`
+	Email       string `json:"email" binding:"required,email"`
+	PhoneNumber string `json:"phone_number" binding:"required"`
+	Password    string `json:"password" binding:"required,min=6"`
 }
 
 type UpdateUserRequest struct {
-	ID       uint   `json:"id" binding:"required"`
-	Username string `json:"username"`
-	Email    string `json:"email"`
+	ID          uint   `json:"id" binding:"required"`
+	Username    string `json:"name" binding:"required"`
+	Email       string `json:"email"`
+	PhoneNumber string `json:"phone_number" binding:"required"`
 }
 
 type UserService struct {
@@ -58,7 +60,7 @@ func (s *UserService) ListUsers(pager *app.Pager) ([]*domain.UserModel, int, *er
 }
 
 func (s *UserService) CreateUser(param *CreateUserRequest) (*domain.UserModel, *errcode.Error) {
-	user, err := s.repo.CreateUser(param.Username, param.Email, param.Password)
+	user, err := s.repo.CreateUser(param.Username, param.Email, param.PhoneNumber, param.Password)
 	if err != nil {
 		return nil, errcode.BadRequest.WithDetails(err.Error())
 	}
@@ -66,7 +68,7 @@ func (s *UserService) CreateUser(param *CreateUserRequest) (*domain.UserModel, *
 }
 
 func (s *UserService) UpdateUser(param *UpdateUserRequest) (*domain.UserModel, *errcode.Error) {
-	user, err := s.repo.UpdateUser(param.ID, param.Username, param.Email)
+	user, err := s.repo.UpdateUser(param.ID, param.Username, param.PhoneNumber, param.Email)
 	if err != nil {
 		return nil, errcode.BadRequest.WithDetails(err.Error())
 	}
