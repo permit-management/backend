@@ -1,132 +1,79 @@
 package v1
 
 import (
-	"context"
+	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
-
-	"github.com/permit-management/backend/internal/constants"
 	"github.com/permit-management/backend/internal/domain"
+	"github.com/permit-management/backend/internal/repository"
 	"github.com/permit-management/backend/internal/service"
-	"github.com/permit-management/backend/pkg/app"
-	"github.com/permit-management/backend/pkg/convert"
-	"github.com/permit-management/backend/pkg/errcode"
-	"github.com/permit-management/backend/pkg/logger"
-	"github.com/permit-management/backend/pkg/setting"
+	"gorm.io/gorm"
 )
 
-type userHandler struct {
-	db  *gorm.DB
-	cfg *setting.Configuration
+type UserHandler struct {
+	service service.UserService
 }
 
-func NewUserHandler(db *gorm.DB, cfg *setting.Configuration) userHandler {
-	return userHandler{
-		db:  db,
-		cfg: cfg,
-	}
+func NewUserHandler(db *gorm.DB) *UserHandler {
+	repo := repository.NewUserRepository(db)
+	svc := service.NewUserService(repo)
+	return &UserHandler{service: svc}
 }
 
-func (h *userHandler) Create(c *gin.Context) {
-	param := service.CreateUserRequest{}
-	response := app.NewResponse(c)
-
-	// Bind JSON body ke struct
-	if err := c.ShouldBindJSON(&param); err != nil {
-		response.ToErrorResponse(errcode.InvalidParams.WithDetails(err.Error()))
+func (h *UserHandler) Create(c *gin.Context) {
+	var user domain.User
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	if err := h.service.Create(&user); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{"data": user, "timestamp": time.Now()})
+}
 
-	ctx := context.WithValue(c.Request.Context(), "username", "create user")
-	svc := service.NewUserService(ctx, h.db)
-
-	user, err := svc.CreateUser(&param)
+func (h *UserHandler) List(c *gin.Context) {
+	users, err := h.service.GetAll()
 	if err != nil {
-		logger.WithTrace(c).Error(err)
-		response.ToErrorResponse(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	response.ToResponse(user)
+	c.JSON(http.StatusOK, users)
 }
 
-func (h *userHandler) List(c *gin.Context) {
-	response := app.NewPagingResponse[*domain.UserModel](c)
-	svc := service.NewUserService(c, h.db)
-	pager := app.NewPager(c, h.cfg)
-
-	users, count, err := svc.ListUsers(pager)
+func (h *UserHandler) Get(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	user, err := h.service.GetByID(uint(id))
 	if err != nil {
-		response.ToErrorResponse(err)
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return
 	}
-
-	response.ToResponse(users, pager, count)
+	c.JSON(http.StatusOK, user)
 }
 
-func (h *userHandler) Get(c *gin.Context) {
-	param := constants.IDRequest{
-		ID: uint(convert.StrTo(c.Param("id")).MustInt()),
-	}
-	response := app.NewResponse(c)
-
-	if app.Validation(c, &param, response, false) != nil {
+func (h *UserHandler) Update(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	var user domain.User
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	ctx := context.WithValue(c.Request.Context(), "username", "get user")
-	svc := service.NewUserService(ctx, h.db)
-
-	user, err := svc.GetUser(&param)
-	if err != nil {
-		response.ToErrorResponse(err)
+	user.ID = uint(id)
+	if err := h.service.Update(&user); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	response.ToResponse(user)
+	c.JSON(http.StatusOK, gin.H{"data": user, "timestamp": time.Now()})
 }
 
-func (h *userHandler) Update(c *gin.Context) {
-	param := service.UpdateUserRequest{
-		ID: uint(convert.StrTo(c.Param("id")).MustInt()),
-	}
-	response := app.NewResponse(c)
-
-	if err := c.ShouldBindJSON(&param); err != nil {
-		response.ToErrorResponse(errcode.InvalidParams.WithDetails(err.Error()))
+func (h *UserHandler) Delete(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	if err := h.service.Delete(uint(id)); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	ctx := context.WithValue(c.Request.Context(), "username", "update user")
-	svc := service.NewUserService(ctx, h.db)
-
-	user, err := svc.UpdateUser(&param)
-	if err != nil {
-		response.ToErrorResponse(err)
-		return
-	}
-
-	response.ToResponse(user)
-}
-
-func (h *userHandler) Delete(c *gin.Context) {
-	param := constants.IDRequest{
-		ID: uint(convert.StrTo(c.Param("id")).MustInt()),
-	}
-	response := app.NewResponse(c)
-
-	if app.Validation(c, &param, response, true) != nil {
-		return
-	}
-
-	ctx := context.WithValue(c.Request.Context(), "username", "delete user")
-	svc := service.NewUserService(ctx, h.db)
-
-	if err := svc.DeleteUser(&param); err != nil {
-		response.ToErrorResponse(err)
-		return
-	}
-
-	response.ToResponse(gin.H{})
+	c.Status(http.StatusNoContent)
 }

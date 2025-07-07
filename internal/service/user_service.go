@@ -1,83 +1,47 @@
 package service
 
 import (
-	"context"
-
-	"github.com/permit-management/backend/internal/constants"
 	"github.com/permit-management/backend/internal/domain"
 	"github.com/permit-management/backend/internal/repository"
-	"github.com/permit-management/backend/pkg/app"
-	"github.com/permit-management/backend/pkg/errcode"
-	"gorm.io/gorm"
+	"time"
 )
 
-type CreateUserRequest struct {
-	Username    string `json:"name" binding:"required"`
-	Email       string `json:"email" binding:"required,email"`
-	PhoneNumber string `json:"phone_number" binding:"required"`
-	Password    string `json:"password" binding:"required,min=6"`
+type UserService interface {
+	Create(user *domain.User) error
+	GetAll() ([]domain.User, error)
+	GetByID(id uint) (*domain.User, error)
+	Update(user *domain.User) error
+	Delete(id uint) error
 }
 
-type UpdateUserRequest struct {
-	ID          uint   `json:"id" binding:"required"`
-	Username    string `json:"name" binding:"required"`
-	Email       string `json:"email"`
-	PhoneNumber string `json:"phone_number" binding:"required"`
-}
-
-type UserService struct {
-	ctx  context.Context
-	db   *gorm.DB
+type userService struct {
 	repo repository.UserRepository
 }
 
-func NewUserService(ctx context.Context, db *gorm.DB) *UserService {
-	return &UserService{
-		ctx:  ctx,
-		db:   db,
-		repo: repository.NewUserRepository(ctx, db),
-	}
+func NewUserService(repo repository.UserRepository) UserService {
+	return &userService{repo: repo}
 }
 
-func (s *UserService) GetUser(param *constants.IDRequest) (*domain.UserModel, *errcode.Error) {
-	user, err := s.repo.GetUser(param.ID)
-	if err != nil {
-		return nil, errcode.BadRequest.WithDetails(err.Error())
-	}
-	return user, nil
+func (s *userService) Create(user *domain.User) error {
+	user.CreatedAt = time.Now()
+	user.UpdatedAt = time.Now()
+	// TODO: hash password before saving
+	return s.repo.Create(user)
 }
 
-func (s *UserService) ListUsers(pager *app.Pager) ([]*domain.UserModel, int, *errcode.Error) {
-	cnt, err := s.repo.CountUsers(pager)
-	if err != nil {
-		return nil, 0, errcode.BadRequest.WithDetails(err.Error())
-	}
-	users, err := s.repo.ListUsers(pager)
-	if err != nil {
-		return nil, 0, errcode.BadRequest.WithDetails(err.Error())
-	}
-	return users, int(cnt), nil
+func (s *userService) GetAll() ([]domain.User, error) {
+	return s.repo.GetAll()
 }
 
-func (s *UserService) CreateUser(param *CreateUserRequest) (*domain.UserModel, *errcode.Error) {
-	user, err := s.repo.CreateUser(param.Username, param.Email, param.PhoneNumber, param.Password)
-	if err != nil {
-		return nil, errcode.BadRequest.WithDetails(err.Error())
-	}
-	return user, nil
+func (s *userService) GetByID(id uint) (*domain.User, error) {
+	return s.repo.GetByID(id)
 }
 
-func (s *UserService) UpdateUser(param *UpdateUserRequest) (*domain.UserModel, *errcode.Error) {
-	user, err := s.repo.UpdateUser(param.ID, param.Username, param.PhoneNumber, param.Email)
-	if err != nil {
-		return nil, errcode.BadRequest.WithDetails(err.Error())
-	}
-	return user, nil
+func (s *userService) Update(user *domain.User) error {
+	user.UpdatedAt = time.Now()
+	return s.repo.Update(user)
 }
 
-func (s *UserService) DeleteUser(param *constants.IDRequest) *errcode.Error {
-	if err := s.repo.DeleteUser(param.ID); err != nil {
-		return errcode.BadRequest.WithDetails(err.Error())
-	}
-	return nil
+func (s *userService) Delete(id uint) error {
+	return s.repo.Delete(id)
 }
