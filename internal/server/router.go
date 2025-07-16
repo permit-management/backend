@@ -6,32 +6,36 @@ import (
 	"github.com/gin-gonic/gin"
 	v1 "github.com/permit-management/backend/internal/handler/v1"
 	"github.com/permit-management/backend/pkg/setting"
+	"github.com/permit-management/backend/internal/repository"
+	"github.com/permit-management/backend/internal/service"
+	"github.com/permit-management/backend/internal/middleware"
 	"gorm.io/gorm"
 )
 
 func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
-	// Health check
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
 
-	apiv1 := r.Group("/api/v1/permit")
-	// apiv1.Use(middleware.Authenticated()) // Uncomment this when middleware is ready
+	userRepo := repository.NewUserRepository(db)
+	authService := service.NewAuthService(userRepo, cfg.App.JWTSecret)
+	authHandler := v1.NewAuthHandler(authService)
 
-	// === Tag routes ===
-	tagHandler := v1.NewTagHandler(db, cfg)
-	tags := apiv1.Group("/tags")
+	auth := r.Group("/api/v1/permit/auth")
 	{
-		tags.POST("", tagHandler.Create)
-		tags.GET("", tagHandler.List)
-		tags.GET("/:id", tagHandler.Get)
-		tags.PUT("/:id", tagHandler.Update)
-		tags.DELETE("/:id", tagHandler.Delete)
+		auth.POST("/register", authHandler.Register)
+		auth.POST("/login", authHandler.Login)
 	}
 
-	// === User routes ===
+	protected := r.Group("/api/v1/permit")
+	protected.Use(middleware.JWT())
+
 	userHandler := v1.NewUserHandler(db)
-	users := apiv1.Group("/users")
+	tagHandler := v1.NewTagHandler(db, cfg)
+	departementHandler := v1.NewDepartementHandler(db, cfg)
+	roleHandler := v1.NewRoleHandler(db, cfg)
+
+	users := protected.Group("/users")
 	{
 		users.POST("", userHandler.Create)
 		users.GET("", userHandler.List)
@@ -40,9 +44,16 @@ func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
 		users.DELETE("/:id", userHandler.Delete)
 	}
 
-	// === Departement routes ===
-	departementHandler := v1.NewDepartementHandler(db, cfg)
-	departements := apiv1.Group("/departements")
+	tags := protected.Group("/tags")
+	{
+		tags.POST("", tagHandler.Create)
+		tags.GET("", tagHandler.List)
+		tags.GET("/:id", tagHandler.Get)
+		tags.PUT("/:id", tagHandler.Update)
+		tags.DELETE("/:id", tagHandler.Delete)
+	}
+
+	departements := protected.Group("/departements")
 	{
 		departements.POST("", departementHandler.Create)
 		departements.GET("", departementHandler.List)
@@ -51,9 +62,7 @@ func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
 		departements.DELETE("/:id", departementHandler.Delete)
 	}
 
-	// === Role routes ===
-	roleHandler := v1.NewRoleHandler(db, cfg)
-	roles := apiv1.Group("/roles")
+	roles := protected.Group("/roles")
 	{
 		roles.POST("", roleHandler.Create)
 		roles.GET("", roleHandler.List)
