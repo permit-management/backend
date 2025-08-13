@@ -47,19 +47,23 @@ func (s *roleService) GetByID(id uint) (*domain.Role, error) {
 }
 
 func (s *roleService) Update(role *domain.Role) error {
+	// Ambil role lama dari DB
 	existingRole, err := s.repo.GetByID(role.ID)
 	if err != nil {
 		return err
 	}
 
+	// Update field dasar
 	existingRole.RoleID = role.RoleID
 	existingRole.RoleName = role.RoleName
 
+	// Hapus permission lama
 	err = s.repo.DeleteRolePermissionsByRoleID(role.ID)
 	if err != nil {
 		return err
 	}
 
+	// Simpan permission baru
 	for i := range role.Permissions {
 		role.Permissions[i].RoleID = role.ID
 		err = s.repo.CreateRolePermission(&role.Permissions[i])
@@ -68,6 +72,7 @@ func (s *roleService) Update(role *domain.Role) error {
 		}
 	}
 
+	// Update role utama
 	return s.repo.Update(existingRole)
 }
 

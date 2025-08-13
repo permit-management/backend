@@ -17,11 +17,13 @@ type RoleHandler struct {
 	service service.RoleService
 }
 
+// NewRoleHandler inisialisasi RoleHandler
 func NewRoleHandler(db *gorm.DB, _ *setting.Configuration) *RoleHandler {
 	repo := service.NewRoleService(repository.NewRoleRepository(db))
 	return &RoleHandler{service: repo}
 }
 
+// Create membuat role baru
 func (h *RoleHandler) Create(c *gin.Context) {
 	var role domain.Role
 	if err := c.ShouldBindJSON(&role); err != nil {
@@ -34,9 +36,14 @@ func (h *RoleHandler) Create(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, role)
+	c.JSON(http.StatusCreated, gin.H{
+		"code":    0,
+		"message": "Role created successfully",
+		"data":    role,
+	})
 }
 
+// List mengambil semua role
 func (h *RoleHandler) List(c *gin.Context) {
 	roles, err := h.service.GetAll()
 	if err != nil {
@@ -46,24 +53,28 @@ func (h *RoleHandler) List(c *gin.Context) {
 	c.JSON(http.StatusOK, roles)
 }
 
+// Get mengambil role berdasarkan ID
 func (h *RoleHandler) Get(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid role id"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role ID"})
 		return
 	}
+
 	role, err := h.service.GetByID(uint(id))
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "role not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Role not found"})
 		return
 	}
+
 	c.JSON(http.StatusOK, role)
 }
 
+// Update memperbarui role berdasarkan ID
 func (h *RoleHandler) Update(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid role id"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role ID"})
 		return
 	}
 
@@ -87,10 +98,11 @@ func (h *RoleHandler) Update(c *gin.Context) {
 	})
 }
 
+// Delete menghapus role berdasarkan ID
 func (h *RoleHandler) Delete(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid role id"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role ID"})
 		return
 	}
 
