@@ -13,10 +13,12 @@ import (
 )
 
 func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
+	// health check
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
 
+	// auth
 	userRepo := repository.NewUserRepository(db)
 	authService := service.NewAuthService(userRepo, cfg.App.JWTSecret)
 	authHandler := v1.NewAuthHandler(authService)
@@ -27,14 +29,18 @@ func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
 		auth.POST("/login", authHandler.Login)
 	}
 
+	// protected routes
 	protected := r.Group("/api/v1/permit")
 	protected.Use(middleware.JWT())
 
+	// handlers
 	userHandler := v1.NewUserHandler(db)
 	tagHandler := v1.NewTagHandler(db, cfg)
 	departementHandler := v1.NewDepartementHandler(db, cfg)
 	roleHandler := v1.NewRoleHandler(db, cfg)
+	permitHandler := v1.NewPermitHandler(db, cfg)
 
+	// untuk user
 	users := protected.Group("/users")
 	{
 		users.POST("", userHandler.Create)
@@ -44,6 +50,7 @@ func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
 		users.DELETE("/:id", userHandler.Delete)
 	}
 
+	// untuk tags
 	tags := protected.Group("/tags")
 	{
 		tags.POST("", tagHandler.Create)
@@ -53,6 +60,7 @@ func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
 		tags.DELETE("/:id", tagHandler.Delete)
 	}
 
+	// untuk departements
 	departements := protected.Group("/departements")
 	{
 		departements.POST("", departementHandler.Create)
@@ -62,6 +70,7 @@ func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
 		departements.DELETE("/:id", departementHandler.Delete)
 	}
 
+	// untuk roles
 	roles := protected.Group("/roles")
 	{
 		roles.POST("", roleHandler.Create)
@@ -69,5 +78,15 @@ func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
 		roles.GET("/:id", roleHandler.Get)
 		roles.PUT("/:id", roleHandler.Update)
 		roles.DELETE("/:id", roleHandler.Delete)
+	}
+
+	// untuk permits
+	permits := protected.Group("/permits")
+	{
+		permits.POST("", permitHandler.CreatePermit)
+		permits.GET("", permitHandler.GetAllPermits)
+		permits.GET("/:id", permitHandler.GetPermitByID)
+		permits.PUT("/:id", permitHandler.UpdatePermit)
+		permits.DELETE("/:id", permitHandler.DeletePermit)
 	}
 }
