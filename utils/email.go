@@ -12,10 +12,12 @@ func SendEmail(to, subject, body string) error {
 	smtpHost := "smtp.gmail.com"
 	smtpPort := "587"
 
-	// format email 
-	msg := "From: " + from + "\n" +
-		"To: " + to + "\n" +
-		"Subject: " + subject + "\n\n" +
+	// format email
+	msg := "From: " + from + "\r\n" +
+		"To: " + to + "\r\n" +
+		"Subject: " + subject + "\r\n" +
+		"MIME-version: 1.0;\r\n" +
+		"Content-Type: text/plain; charset=\"UTF-8\";\r\n\r\n" +
 		body
 
 	// autentikasi

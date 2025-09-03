@@ -1,8 +1,8 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE tbl_incident_report (
-    id VARCHAR(50) PRIMARY KEY,
-    permit_id VARCHAR(50) NOT NULL,
+    id SERIAL PRIMARY KEY,
+    permit_id BIGINT UNSIGNED NOT NULL,
     description TEXT,
     photo VARCHAR(255),
     date TIMESTAMP,
@@ -14,5 +14,6 @@ CREATE TABLE tbl_incident_report (
 
 -- +goose Down
 -- +goose StatementBegin
-SELECT 'down SQL query';
+DROP TABLE IF EXISTS tbl_incident_report;
 -- +goose StatementEnd
+

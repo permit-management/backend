@@ -1,8 +1,8 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE tbl_activity (
-    id VARCHAR(50) PRIMARY KEY,
-    permit_id VARCHAR(50) NOT NULL,
+    id SERIAL PRIMARY KEY,
+    permit_id BIGINT UNSIGNED NOT NULL,
     date TIMESTAMP NOT NULL,
     description VARCHAR(255),
     status VARCHAR(50),
@@ -16,3 +16,4 @@ CREATE TABLE tbl_activity (
 -- +goose StatementBegin
 DROP TABLE IF EXISTS tbl_activity;
 -- +goose StatementEnd
+

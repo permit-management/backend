@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"gorm.io/gorm"
 	"github.com/permit-management/backend/internal/domain"
+	"gorm.io/gorm"
 )
 
 type PermitRepository interface {
@@ -23,21 +23,28 @@ func NewPermitRepository(db *gorm.DB) PermitRepository {
 
 func (r *permitRepository) Create(permit *domain.Permit) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Create(&permit).Error; err != nil {
+		// Insert permit
+		if err := tx.Create(permit).Error; err != nil {
 			return err
 		}
+
+		// Insert activities
 		for i := range permit.Activities {
 			permit.Activities[i].PermitID = permit.ID
 			if err := tx.Create(&permit.Activities[i]).Error; err != nil {
 				return err
 			}
 		}
+
+		// Insert workers
 		for i := range permit.Workers {
 			permit.Workers[i].PermitID = permit.ID
+			permit.Workers[i].ID = 0 
 			if err := tx.Create(&permit.Workers[i]).Error; err != nil {
 				return err
 			}
 		}
+
 		return nil
 	})
 }
@@ -55,7 +62,7 @@ func (r *permitRepository) FindByID(id uint) (domain.Permit, error) {
 }
 
 func (r *permitRepository) Update(permit *domain.Permit) error {
-	return r.db.Save(&permit).Error
+	return r.db.Save(permit).Error
 }
 
 func (r *permitRepository) Delete(id uint) error {

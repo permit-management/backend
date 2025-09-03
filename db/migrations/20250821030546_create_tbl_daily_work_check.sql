@@ -1,9 +1,9 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE tbl_daily_work_check (
-    id VARCHAR(50) PRIMARY KEY,
-    permit_id VARCHAR(50) NOT NULL,
-    activity_id VARCHAR(50),
+    id SERIAL PRIMARY KEY,
+    permit_id BIGINT UNSIGNED NOT NULL,
+    activity_id BIGINT UNSIGNED,
     date TIMESTAMP NOT NULL,
     nik VARCHAR(50),
     status VARCHAR(50),
@@ -19,3 +19,4 @@ CREATE TABLE tbl_daily_work_check (
 -- +goose StatementBegin
 DROP TABLE IF EXISTS tbl_daily_work_check;
 -- +goose StatementEnd
+

@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/permit-management/backend/internal/domain"
@@ -57,15 +58,20 @@ func (s *permitService) CreatePermit(permit *domain.Permit) error {
 
 	// kirim email notifikasi ke worker
 	subject := "Permit Created: " + permit.PermitNumber
-	body := "Halo,\n\n" +
-		"Permit Anda dengan nomor " + permit.PermitNumber + " berhasil dibuat.\n" +
-		"NIK: " + worker.NIK + "\n\n" +
+	body := "Halo,\r\n\r\n" +
+		"Permit Anda dengan nomor " + permit.PermitNumber + " berhasil dibuat.\r\n" +
+		"NIK: " + worker.NIK + "\r\n\r\n" +
 		"Terima kasih."
-	_ = utils.SendEmail(worker.Email, subject, body)
+
+	if err := utils.SendEmail(worker.Email, subject, body); err != nil {
+		fmt.Println("Gagal kirim email:", err)
+		return err
+	} else {
+		fmt.Println("Email berhasil dikirim ke:", worker.Email)
+	}
 
 	return nil
 }
-
 
 func (s *permitService) GetAllPermits() ([]domain.Permit, error) {
 	return s.repo.FindAll()

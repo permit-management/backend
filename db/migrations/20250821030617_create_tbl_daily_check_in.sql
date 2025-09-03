@@ -1,8 +1,8 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE tbl_daily_check_in (
-    id VARCHAR(50) PRIMARY KEY,
-    permit_id VARCHAR(50) NOT NULL,
+    id SERIAL PRIMARY KEY,
+    permit_id BIGINT UNSIGNED NOT NULL,
     date TIMESTAMP NOT NULL,
     status VARCHAR(50),
     worker_name VARCHAR(100),
@@ -16,5 +16,5 @@ CREATE TABLE tbl_daily_check_in (
 
 -- +goose Down
 -- +goose StatementBegin
-SELECT 'down SQL query';
+DROP TABLE IF EXISTS tbl_daily_check_in;
 -- +goose StatementEnd

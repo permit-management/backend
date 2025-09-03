@@ -1,8 +1,8 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE tbl_worker (
-    id VARCHAR(50) PRIMARY KEY,
-    permit_id VARCHAR(50) NOT NULL,
+    id SERIAL PRIMARY KEY,
+    permit_id BIGINT UNSIGNED NOT NULL,
     email VARCHAR(100),
     name VARCHAR(100),
     phone_number VARCHAR(20),
@@ -15,5 +15,5 @@ CREATE TABLE tbl_worker (
 
 -- +goose Down
 -- +goose StatementBegin
-SELECT 'down SQL query';
+DROP TABLE IF EXISTS tbl_worker;
 -- +goose StatementEnd
