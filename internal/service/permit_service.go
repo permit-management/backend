@@ -47,22 +47,56 @@ func (s *permitService) CreatePermit(permit *domain.Permit) error {
 		return errors.New("Email is required")
 	}
 
-	// set timestamp
+	// validasi activity (minimal 1 activity masuk)
+	if len(permit.Activities) == 0 {
+		return errors.New("at least one activity is required")
+	}
+
+	for i, activity := range permit.Activities {
+		if activity.Description == "" {
+			return fmt.Errorf("activity %d description is required", i+1)
+		}
+		if activity.Status == "" {
+			return fmt.Errorf("activity %d status is required", i+1)
+		}
+		// set default CreatedAt & UpdatedAt (kalau belum dikirim dari JSON)
+		if activity.CreatedAt.IsZero() {
+			permit.Activities[i].CreatedAt = time.Now()
+		}
+		permit.Activities[i].UpdatedAt = time.Now()
+	}
+
+	// set timestamp permit
 	permit.CreatedAt = time.Now()
 	permit.UpdatedAt = time.Now()
 
-	// simpan ke DB (sekalian akan simpan workers karena ada relasi)
+	// simpan ke DB (sekalian akan simpan workers & activities karena ada relasi)
 	if err := s.repo.Create(permit); err != nil {
 		return err
 	}
 
-	// kirim email notifikasi ke worker
+	// kirim email notifikasi ke worker pertama
 	subject := "Permit Created: " + permit.PermitNumber
+
+	// base body
 	body := "Halo,\r\n\r\n" +
 		"Permit Anda dengan nomor " + permit.PermitNumber + " berhasil dibuat.\r\n" +
 		"NIK: " + worker.NIK + "\r\n\r\n" +
-		"Terima kasih."
+		"Berikut daftar aktivitas yang akan dikerjakan:\r\n"
 
+	// tambahkan activity ke body email
+	for i, activity := range permit.Activities {
+		body += fmt.Sprintf("%d. %s - %s (Status: %s)\r\n",
+			i+1,
+			activity.Date.Format("2006-01-02 15:04"),
+			activity.Description,
+			activity.Status,
+		)
+	}
+
+	body += "\r\nTerima kasih."
+
+	// kirim email
 	if err := utils.SendEmail(worker.Email, subject, body); err != nil {
 		fmt.Println("Gagal kirim email:", err)
 		return err
