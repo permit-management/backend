@@ -31,6 +31,7 @@ func (r *permitRepository) Create(permit *domain.Permit) error {
 		// Insert activities
 		for i := range permit.Activities {
 			permit.Activities[i].PermitID = permit.ID
+			permit.Activities[i].ID = 0
 			if err := tx.Create(&permit.Activities[i]).Error; err != nil {
 				return err
 			}
@@ -51,13 +52,13 @@ func (r *permitRepository) Create(permit *domain.Permit) error {
 
 func (r *permitRepository) FindAll() ([]domain.Permit, error) {
 	var permits []domain.Permit
-	err := r.db.Preload("Activities").Preload("Workers").Find(&permits).Error
+	err := r.db.Preload("Activities").Preload("Workers").Preload("WorkType").Find(&permits).Error
 	return permits, err
 }
 
 func (r *permitRepository) FindByID(id uint) (domain.Permit, error) {
 	var permit domain.Permit
-	err := r.db.Preload("Activities").Preload("Workers").First(&permit, id).Error
+	err := r.db.Preload("Activities").Preload("Workers").Preload("WorkType").First(&permit, id).Error
 	return permit, err
 }
 

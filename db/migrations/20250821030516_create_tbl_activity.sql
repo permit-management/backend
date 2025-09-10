@@ -1,7 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE tbl_activity (
-    id SERIAL PRIMARY KEY,
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     permit_id BIGINT UNSIGNED NOT NULL,
     date TIMESTAMP NOT NULL,
     description VARCHAR(255),
