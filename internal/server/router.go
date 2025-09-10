@@ -39,6 +39,7 @@ func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
 	departementHandler := v1.NewDepartementHandler(db, cfg)
 	roleHandler := v1.NewRoleHandler(db, cfg)
 	permitHandler := v1.NewPermitHandler(db, cfg)
+	workTypeHandler := v1.NewWorkTypeHandler(db, cfg)
 
 	// untuk user
 	users := protected.Group("/users")
@@ -88,5 +89,15 @@ func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
 		permits.GET("/:id", permitHandler.GetPermitByID)
 		permits.PUT("/:id", permitHandler.UpdatePermit)
 		permits.DELETE("/:id", permitHandler.DeletePermit)
+	}
+
+	// untuk work types
+	workTypes := protected.Group("/work-types")
+	{
+		workTypes.POST("", workTypeHandler.Create)
+		workTypes.GET("", workTypeHandler.List)
+		workTypes.GET("/:id", workTypeHandler.Get)
+		workTypes.PUT("/:id", workTypeHandler.Update)
+		workTypes.DELETE("/:id", workTypeHandler.Delete)
 	}
 }
