@@ -11,6 +11,9 @@ type PermitRepository interface {
 	FindByID(id uint) (domain.Permit, error)
 	Update(permit *domain.Permit) error
 	Delete(id uint) error
+
+	// tambahan
+	UpdateStatus(permitID uint, status string) error
 }
 
 type permitRepository struct {
@@ -40,7 +43,7 @@ func (r *permitRepository) Create(permit *domain.Permit) error {
 		// Insert workers
 		for i := range permit.Workers {
 			permit.Workers[i].PermitID = permit.ID
-			permit.Workers[i].ID = 0 
+			permit.Workers[i].ID = 0
 			if err := tx.Create(&permit.Workers[i]).Error; err != nil {
 				return err
 			}
@@ -68,4 +71,11 @@ func (r *permitRepository) Update(permit *domain.Permit) error {
 
 func (r *permitRepository) Delete(id uint) error {
 	return r.db.Delete(&domain.Permit{}, id).Error
+}
+
+// tambahan: update status permit
+func (r *permitRepository) UpdateStatus(permitID uint, status string) error {
+	return r.db.Model(&domain.Permit{}).
+		Where("id = ?", permitID).
+		Update("status", status).Error
 }

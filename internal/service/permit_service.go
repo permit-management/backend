@@ -7,7 +7,6 @@ import (
 
 	"github.com/permit-management/backend/internal/domain"
 	"github.com/permit-management/backend/internal/repository"
-	"github.com/permit-management/backend/utils"
 )
 
 // interface
@@ -39,7 +38,7 @@ func (s *permitService) CreatePermit(permit *domain.Permit) error {
 		return errors.New("at least one worker is required")
 	}
 
-	worker := permit.Workers[0] // misal ambil worker pertama
+	worker := permit.Workers[0] // ambil worker pertama
 	if worker.NIK == "" {
 		return errors.New("NIK is required")
 	}
@@ -66,6 +65,9 @@ func (s *permitService) CreatePermit(permit *domain.Permit) error {
 		permit.Activities[i].UpdatedAt = time.Now()
 	}
 
+	// set status awal permit ke "Pending"
+	permit.Status = "Pending"
+
 	// set timestamp permit
 	permit.CreatedAt = time.Now()
 	permit.UpdatedAt = time.Now()
@@ -75,34 +77,9 @@ func (s *permitService) CreatePermit(permit *domain.Permit) error {
 		return err
 	}
 
-	// kirim email notifikasi ke worker pertama
-	subject := "Permit Created: " + permit.PermitNumber
+	// email akan dikirim saat admin melakukan approval (API Approve Permit)
 
-	// base body
-	body := "Halo,\r\n\r\n" +
-		"Permit Anda dengan nomor " + permit.PermitNumber + " berhasil dibuat.\r\n" +
-		"NIK: " + worker.NIK + "\r\n\r\n" +
-		"Berikut daftar aktivitas yang akan dikerjakan:\r\n"
-
-	// tambahkan activity ke body email
-	for i, activity := range permit.Activities {
-		body += fmt.Sprintf("%d. %s - %s (Status: %s)\r\n",
-			i+1,
-			activity.Date.Format("2006-01-02 15:04"),
-			activity.Description,
-			activity.Status,
-		)
-	}
-
-	body += "\r\nTerima kasih."
-
-	// kirim email
-	if err := utils.SendEmail(worker.Email, subject, body); err != nil {
-		fmt.Println("Gagal kirim email:", err)
-		return err
-	} else {
-		fmt.Println("Email berhasil dikirim ke:", worker.Email)
-	}
+	fmt.Println("Permit berhasil dibuat dengan status Pending, menunggu approval admin.")
 
 	return nil
 }

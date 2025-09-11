@@ -41,6 +41,12 @@ func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
 	permitHandler := v1.NewPermitHandler(db, cfg)
 	workTypeHandler := v1.NewWorkTypeHandler(db, cfg)
 
+	// repository & service utk permit approvals
+	permitApprovalRepo := repository.NewPermitApprovalRepository(db)
+	permitRepo := repository.NewPermitRepository(db)
+	permitApprovalService := service.NewPermitApprovalService(permitApprovalRepo, permitRepo)
+	permitApprovalHandler := v1.NewPermitApprovalHandler(permitApprovalService)
+
 	// untuk user
 	users := protected.Group("/users")
 	{
@@ -99,5 +105,13 @@ func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
 		workTypes.GET("/:id", workTypeHandler.Get)
 		workTypes.PUT("/:id", workTypeHandler.Update)
 		workTypes.DELETE("/:id", workTypeHandler.Delete)
+	}
+
+	// untuk permit approvals
+	permitApprovals := protected.Group("/permit-approvals")
+	{
+		permitApprovals.POST("", permitApprovalHandler.ApprovePermit)
+		// kalau mau lihat history approval per permit
+		// permitApprovals.GET("/:permit_id", permitApprovalHandler.ListByPermitID)
 	}
 }
