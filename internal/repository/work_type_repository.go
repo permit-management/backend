@@ -26,9 +26,9 @@ func (r *workTypeRepository) Create(workType *domain.WorkType) error {
 }
 
 func (r *workTypeRepository) FindAll() ([]domain.WorkType, error) {
-	var workTypes []domain.WorkType
-	err := r.db.Preload("ApprovalUser1").Preload("ApprovalUser2").Preload("ApprovalUser3").Find(&workTypes).Error
-	return workTypes, err
+    var workTypes []domain.WorkType
+    err := r.db.Find(&workTypes).Error
+    return workTypes, err
 }
 
 func (r *workTypeRepository) FindByID(id uint) (*domain.WorkType, error) {
