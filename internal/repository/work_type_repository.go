@@ -32,9 +32,11 @@ func (r *workTypeRepository) FindAll() ([]domain.WorkType, error) {
 }
 
 func (r *workTypeRepository) FindByID(id uint) (*domain.WorkType, error) {
-	var workType domain.WorkType
-	err := r.db.Preload("ApprovalUser1").Preload("ApprovalUser2").Preload("ApprovalUser3").First(&workType, id).Error
-	return &workType, err
+    var workType domain.WorkType
+    if err := r.db.First(&workType, id).Error; err != nil {
+        return nil, err
+    }
+    return &workType, nil
 }
 
 func (r *workTypeRepository) Update(workType *domain.WorkType) error {
