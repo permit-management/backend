@@ -19,6 +19,3 @@ type Worker struct {
 func (Worker) TableName() string {
     return "tbl_worker"
 }
-
-
-

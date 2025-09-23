@@ -5,10 +5,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	v1 "github.com/permit-management/backend/internal/handler/v1"
-	"github.com/permit-management/backend/pkg/setting"
+	"github.com/permit-management/backend/internal/middleware"
 	"github.com/permit-management/backend/internal/repository"
 	"github.com/permit-management/backend/internal/service"
-	"github.com/permit-management/backend/internal/middleware"
+	"github.com/permit-management/backend/pkg/setting"
 	"gorm.io/gorm"
 )
 
@@ -23,12 +23,19 @@ func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
 	authService := service.NewAuthService(userRepo, cfg.App.JWTSecret)
 	authHandler := v1.NewAuthHandler(authService)
 
-	auth := r.Group("/api/v1/permit/auth")
-	{
+	//auth mobile
+	authMobileRepo := repository.NewAuthMobileRepository(db)
+	authMobileService := service.NewAuthMobileService(authMobileRepo, cfg.App.JWTSecret)
+	authMobileHandler := v1.NewAuthMobileHandler(authMobileService)
+
+	auth := r.Group("/api/v1/permit/auth") 
+{
 		auth.POST("/register", authHandler.Register)
 		auth.POST("/login", authHandler.Login)
-	}
 
+		//ini route khusus mobile login
+		auth.POST("/mobile/login", authMobileHandler.Login)
+	}
 	// protected routes
 	protected := r.Group("/api/v1/permit")
 	protected.Use(middleware.JWT())
@@ -113,5 +120,10 @@ func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
 		permitApprovals.POST("", permitApprovalHandler.ApprovePermit)
 		// kalau mau lihat history approval per permit
 		// permitApprovals.GET("/:permit_id", permitApprovalHandler.ListByPermitID)
+	}
+
+	authMobile := r.Group("/api/v1/mobile/auth")
+	{
+		authMobile.POST("/login", authMobileHandler.Login)
 	}
 }
