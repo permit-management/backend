@@ -28,8 +28,8 @@ func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
 	authMobileService := service.NewAuthMobileService(authMobileRepo, cfg.App.JWTSecret)
 	authMobileHandler := v1.NewAuthMobileHandler(authMobileService)
 
-	auth := r.Group("/api/v1/permit/auth") 
-{
+	auth := r.Group("/api/v1/permit/auth")
+	{
 		auth.POST("/register", authHandler.Register)
 		auth.POST("/login", authHandler.Login)
 
@@ -53,6 +53,11 @@ func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
 	permitRepo := repository.NewPermitRepository(db)
 	permitApprovalService := service.NewPermitApprovalService(permitApprovalRepo, permitRepo)
 	permitApprovalHandler := v1.NewPermitApprovalHandler(permitApprovalService)
+
+	// repository & service utk check-in
+	checkInRepo := repository.NewCheckInRepository(db)
+	checkInService := service.NewCheckInService(checkInRepo)
+	checkInHandler := v1.NewCheckInHandler(checkInService)
 
 	// untuk user
 	users := protected.Group("/users")
@@ -125,5 +130,11 @@ func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
 	authMobile := r.Group("/api/v1/mobile/auth")
 	{
 		authMobile.POST("/login", authMobileHandler.Login)
+	}
+
+	// untuk check-in
+	checkin := r.Group("/api/v1/mobile") 
+	{
+		checkin.POST("/checkin", checkInHandler.CheckIn)
 	}
 }
