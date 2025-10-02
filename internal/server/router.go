@@ -59,6 +59,12 @@ func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
 	checkInService := service.NewCheckInService(checkInRepo)
 	checkInHandler := v1.NewCheckInHandler(checkInService)
 
+	// repository & service utk daily work check
+	dailyWorkCheckRepo := repository.NewDailyWorkCheckRepository(db)
+	activityRepo := repository.NewActivityRepository(db)
+	dailyWorkCheckService := service.NewDailyWorkCheckService(dailyWorkCheckRepo, activityRepo)
+	dailyWorkCheckHandler := v1.NewDailyWorkCheckHandler(dailyWorkCheckService)
+
 	// untuk user
 	users := protected.Group("/users")
 	{
@@ -133,8 +139,18 @@ func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
 	}
 
 	// untuk check-in
-	checkin := r.Group("/api/v1/mobile") 
+	checkin := r.Group("/api/v1/mobile")
 	{
 		checkin.POST("/checkin", checkInHandler.CheckIn)
+	}
+
+	// untuk mobile (daily work check)
+	mobile := r.Group("/api/v1/mobile")
+	{
+		// worker selesai mengerjakan aktivitas
+		mobile.POST("/daily-work-check/done", dailyWorkCheckHandler.MarkDone)
+
+		// worker ambil semua aktivitas berdasarkan permit & nik
+		mobile.GET("/daily-work-check/:permit_id/:nik", dailyWorkCheckHandler.GetActivitiesByWorker)
 	}
 }
