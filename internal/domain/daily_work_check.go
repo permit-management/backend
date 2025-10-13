@@ -16,7 +16,6 @@ type DailyWorkCheck struct {
 
 	Permit   Permit   `json:"permit" gorm:"foreignKey:PermitID"`
 	Activity Activity `json:"activity" gorm:"foreignKey:ActivityID"`
-	NIK      string   `json:"nik" gorm:"foreignKey:Nik;references:Nik"` // ini aku tambahin sendiri, karna menurutku relasi ini agar lebih jelas nik ini milik siapa / relasi ke worker
 }
 
 func (DailyWorkCheck) TableName() string {

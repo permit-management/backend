@@ -65,6 +65,10 @@ func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
 	dailyWorkCheckService := service.NewDailyWorkCheckService(dailyWorkCheckRepo, activityRepo)
 	dailyWorkCheckHandler := v1.NewDailyWorkCheckHandler(dailyWorkCheckService)
 
+	incidentReportRepo := repository.NewIncidentReportRepository(db)
+	incidentReportService := service.NewIncidentReportService(incidentReportRepo)
+	incidentReportHandler := v1.NewIncidentReportHandler(incidentReportService)
+
 	// untuk user
 	users := protected.Group("/users")
 	{
@@ -152,5 +156,11 @@ func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
 
 		// worker ambil semua aktivitas berdasarkan permit & nik
 		mobile.GET("/daily-work-check/:permit_id/:nik", dailyWorkCheckHandler.GetActivitiesByWorker)
+	}
+
+	// untuk mobile (incident report)
+	mobileIncident := r.Group("/api/v1/mobile")
+	{
+		mobileIncident.POST("/incident-report", incidentReportHandler.Create)
 	}
 }
