@@ -3,6 +3,7 @@ package repository
 import (
 	"github.com/permit-management/backend/internal/domain"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type PermitRepository interface {
@@ -24,26 +25,25 @@ func NewPermitRepository(db *gorm.DB) PermitRepository {
 	return &permitRepository{db}
 }
 
+// hindari duplikasi data relasi
 func (r *permitRepository) Create(permit *domain.Permit) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
-		// Insert permit
-		if err := tx.Create(permit).Error; err != nil {
+		// insert permit tanpa auto-insert relasi
+		if err := tx.Omit(clause.Associations).Create(permit).Error; err != nil {
 			return err
 		}
 
-		// Insert activities
+		// insert activities (manual, tapi hanya sekali)
 		for i := range permit.Activities {
 			permit.Activities[i].PermitID = permit.ID
-			permit.Activities[i].ID = 0
 			if err := tx.Create(&permit.Activities[i]).Error; err != nil {
 				return err
 			}
 		}
 
-		// Insert workers
+		// insert workers (manual, tapi hanya sekali)
 		for i := range permit.Workers {
 			permit.Workers[i].PermitID = permit.ID
-			permit.Workers[i].ID = 0
 			if err := tx.Create(&permit.Workers[i]).Error; err != nil {
 				return err
 			}

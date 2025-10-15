@@ -49,19 +49,23 @@ func (h *IncidentReportHandler) Create(c *gin.Context) {
 
 	// upload photo
 	file, err := c.FormFile("photo")
-	var filename string
-	if err == nil && file != nil {
-		filename = filepath.Base(file.Filename)
-		savePath := filepath.Join("uploads", "incident_report", filename)
-
-		if err := c.SaveUploadedFile(file, savePath); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to upload photo"})
-			return
-		}
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "photo is required"})
+		return
 	}
 
+	filename := time.Now().Format("20060102_150405") + filepath.Ext(file.Filename)
+	savePath := "uploads/incident_report/" + filename
+	if err := c.SaveUploadedFile(file, savePath); err != nil {
+		fmt.Println("failed to save uploaded file: ", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save photo"})
+		return
+	}
+
+	photoURL := "uploads/incident_report/" + filename
+
 	// call service
-	err = h.service.Create(permitID, description, filename, date)
+	err = h.service.Create(permitID, description, photoURL, date)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
