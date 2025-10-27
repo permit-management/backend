@@ -35,7 +35,7 @@ docker-down:
 
 # Generate new migration
 setup-migration:
-	@go install -tags='no_mysql no_sqlite3 no_ydb' github.com/pressly/goose/v3/cmd/goose@latest
+	@go install -tags='no_psql no_sqlite3 no_ydb' github.com/pressly/goose/v3/cmd/goose@latest
 	
 # make migration name=update_table_user
 db-migration:
