@@ -1,0 +1,34 @@
+App:
+  RunMode: debug
+  HTTPPort: 8080
+  ReadTimeout: 30s
+  WriteTimeout: 30s
+  DefaultPageSize: 25
+  MaxPageSize: 100
+  ServerShutdownTimeout: 10s
+  Listen: 127.0.0.1
+  JWTSecret: your_secret_jwt_key_here
+Log:
+  LogSavePath: logs
+  LogFileName: application.log
+  Level: info
+  MaxSize: 10
+  MaxBackups: 5
+  Compress: False
+Database:
+  Username: root
+  Password: Password
+  Host: localhost
+  Port: 3306
+  DBName: permit_mgt
+  Schema: ""
+  Charset: utf8
+  ParseTime: True
+  MaxIdleConns: 10
+  MaxOpenConns: 30
+  MigrationURL: "file://db/migration"
+Ratelimit:
+  Enable: True
+  ConfigFile: sentinel.yml
+  CPULoadThresh: 0
+  CPULoadStrategy: -1 # 0: BBR, -1: NoAdaptive

@@ -21,6 +21,7 @@ type AppSettingS struct {
 	DefaultPageSize       int           `mapstructure:"DefaultPageSize" env:"APP_PAGE_SIZE"`
 	MaxPageSize           int           `mapstructure:"MaxPageSize" env:"APP_MAX_PAGE"`
 	ServerShutdownTimeout time.Duration `mapstructure:"ServerShutdownTimeout" env:"APP_SHUTDOWN_TIMEOUT"`
+	JWTSecret             string        `mapstructure:"JWTSecret" env:"APP_JWT_SECRET"`
 }
 
 type LogSettingS struct {
@@ -65,9 +66,11 @@ func Load(cfgFile string, defaultConfig map[string]interface{}) error {
 		viper.SetDefault(key, val)
 	}
 
-	viper.ReadInConfig()
+	if err := viper.ReadInConfig(); err != nil {
+		return err
+	}
 
-	viper.SetEnvKeyReplacer(strings.NewReplacer(`.`, `_`))
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 
 	err := viper.Unmarshal(Conf)

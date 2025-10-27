@@ -14,6 +14,10 @@ type Error struct {
 	Time    time.Time `json:"timestamp,omitempty"`
 }
 
+var (
+	InvalidParams = NewError(200201, "invalid Request", http.StatusBadRequest)
+)
+
 var codes = map[int]string{}
 
 func NewError(code int, msg string, status int) *Error {

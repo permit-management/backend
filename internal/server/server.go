@@ -3,7 +3,9 @@ package server
 import (
 	"context"
 	"net/http"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/permit-management/backend/internal/middleware"
 	"github.com/permit-management/backend/pkg/setting"
 
@@ -32,6 +34,17 @@ type Server struct {
 func NewServer(cfg *setting.Configuration, db *gorm.DB) *Server {
 	r := gin.New()
 
+	// CORS
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
+
+	// Tambahkan middleware default seperti logger, recover, dll
 	middleware.UseDefault(r, cfg)
 
 	SetRouters(r, cfg, db)
@@ -53,7 +66,6 @@ func NewServer(cfg *setting.Configuration, db *gorm.DB) *Server {
 }
 
 func (s *Server) Start() error {
-	// Timeout: https://adam-p.ca/blog/2022/01/golang-http-server-timeouts/
 	go func() {
 		log.Info("Starting HTTP Server at :", s.Config.App.HTTPPort)
 		if err := s.Svr.ListenAndServe(); err != http.ErrServerClosed {
