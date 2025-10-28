@@ -31,6 +31,7 @@ COPY --from=builder --chown=1001 /go/bin/goose .
 RUN chmod +x /app/runner
 COPY db/migrations ./db/migrations
 COPY scripts ./scripts
+COPY configs/config.yml.example ./configs/config.yml
 RUN chmod +x scripts/startup/start.sh && chmod +x scripts/startup/wait-for.sh
 
 RUN apk add --no-cache tzdata

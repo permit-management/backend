@@ -19,7 +19,7 @@ services:
       DATABASE_PASSWORD: ZXcvbnm123!
       DATABASE_DBNAME: permit_management
       GOOSE_DRIVER: mysql
-      GOOSE_DBSTRING: permit_user:ZXcvbnm123!@tcp(db:3306)/permit_management?charset=utf8mb4&parseTime=True&loc=UTC
+      GOOSE_DBSTRING: permit_user:ZXcvbnm123!@tcp(db:3306)/permit_management?charset=utf8mb4&parseTime=True&loc=UTC&multiStatements=true
       GOOSE_MIGRATION_DIR: ./db/migrations
     depends_on:
       db:

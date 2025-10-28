@@ -18,6 +18,8 @@ func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
 
+	r.Static("/uploads", cfg.App.UploadFolder)
+
 	// auth
 	userRepo := repository.NewUserRepository(db)
 	authService := service.NewAuthService(userRepo, cfg.App.JWTSecret)
@@ -39,6 +41,7 @@ func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
 	// protected routes
 	protected := r.Group("/api/v1/permit")
 	protected.Use(middleware.JWT())
+	unprotected := r.Group("/api/permit")
 
 	// handlers
 	userHandler := v1.NewUserHandler(db)
@@ -117,6 +120,8 @@ func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
 		permits.GET("/:id", permitHandler.GetPermitByID)
 		permits.PUT("/:id", permitHandler.UpdatePermit)
 		permits.DELETE("/:id", permitHandler.DeletePermit)
+
+		unprotected.POST("/permits", permitHandler.CreatePermit)
 	}
 
 	// untuk work types
@@ -127,6 +132,9 @@ func SetRouters(r *gin.Engine, cfg *setting.Configuration, db *gorm.DB) {
 		workTypes.GET("/:id", workTypeHandler.Get)
 		workTypes.PUT("/:id", workTypeHandler.Update)
 		workTypes.DELETE("/:id", workTypeHandler.Delete)
+
+		unprotected.GET("/work-types", workTypeHandler.List)
+		unprotected.GET("/work-types/:id", workTypeHandler.Get)
 	}
 
 	// untuk permit approvals

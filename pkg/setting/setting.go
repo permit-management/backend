@@ -22,6 +22,8 @@ type AppSettingS struct {
 	MaxPageSize           int           `mapstructure:"MaxPageSize" env:"APP_MAX_PAGE"`
 	ServerShutdownTimeout time.Duration `mapstructure:"ServerShutdownTimeout" env:"APP_SHUTDOWN_TIMEOUT"`
 	JWTSecret             string        `mapstructure:"JWTSecret" env:"APP_JWT_SECRET"`
+
+	UploadFolder string `mapstructure:"UploadFolder" env:"APP_UPLOAD_FOLDER"`
 }
 
 type LogSettingS struct {

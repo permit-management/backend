@@ -9,6 +9,7 @@ var defaultConfig = map[string]interface{}{
 	"App.DefaultPageSize":       50,
 	"App.MaxPageSize":           100,
 	"App.ServerShutdownTimeout": "30s",
+	"App.UploadFolder":          "uploads",
 
 	"Log.LogSavePath": "logs",
 	"Log.LogFileName": "application.log",
