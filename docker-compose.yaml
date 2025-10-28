@@ -1,35 +1,43 @@
 name: permit-management
 
 services:
-  user-ms:
-    image: permit-backend:local
+  backend:
+    restart: always
+    image: ghcr.io/permit-management/backend:main
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - ${APP_PORT:-8080}:8080
+    privileged: true
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      - ./configs/config.yml:/app/config.yml
     environment:
-      APP_ENV: ${APP_ENV:-debug}
-      DB_HOST: ${DB_HOST:-db}
-      DB_PORT: ${DB_PORT:-5432}
-      DB_DATABASE: ${DB_DATABASE:-SIMFAST_DEV}
-      DB_USERNAME: ${DB_USERNAME:-SIMFAST_USER}
-      DB_PASSWORD: ${DB_PASSWORD:-SIMFAST_PASS}
-      DB_SCHEMA: ${DB_SCHEMA:-user_schema}
+      APP_RUNMODE: release
+      APP_HTTPPORT: 8080
+      APP_SERVERKEY: SecretKey
+      APP_LISTEN: 0.0.0.0
+      DATABASE_HOST: db
+      DATABASE_PORT: 3306
+      DATABASE_USERNAME: permit_user
+      DATABASE_PASSWORD: ZXcvbnm123!
+      DATABASE_DBNAME: permit_management
+      GOOSE_DRIVER: mysql
+      GOOSE_DBSTRING: permit_user:ZXcvbnm123!@tcp(db:3306)/permit_management?charset=utf8mb4&parseTime=True&loc=UTC
+      GOOSE_MIGRATION_DIR: ./db/migrations
     depends_on:
       db:
         condition: service_healthy
+    ports:
+      - "9090:8080"
     networks:
       - permit_network
-    volumes:
-      - ./config.yml:/app/config.yml
     entrypoint:
       [
         "/app/scripts/startup/wait-for.sh",
-        "${DB_HOST:-db}:${DB_PORT:-5432}",
+        "${DB_HOST:-db}:${DB_PORT:-3306}",
         "--",
-        "/app/runner",
-        "serve"
+        "/app/runner"
       ]
 
   db:
@@ -45,6 +53,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    ports:
+      - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
     networks:
