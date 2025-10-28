@@ -61,7 +61,7 @@ func (r *permitRepository) FindAll() ([]domain.Permit, error) {
 
 func (r *permitRepository) FindByID(id uint) (domain.Permit, error) {
 	var permit domain.Permit
-	err := r.db.Preload("Activities").Preload("Workers").Preload("WorkType").First(&permit, id).Error
+	err := r.db.Preload("Activities").Preload("Workers").Preload("WorkType").Preload("CheckIns").Preload("Incidents").First(&permit, id).Error
 	return permit, err
 }
 
