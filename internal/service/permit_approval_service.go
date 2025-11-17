@@ -74,3 +74,28 @@ func (s *permitApprovalService) ApprovePermit(approval *domain.PermitApproval) e
 
 	return nil
 }
+
+if approval.Status == "Rejected" {
+    permit, err := s.permitRepo.FindByID(approval.PermitID)
+    if err != nil {
+        return err
+    }
+
+    for _, worker := range permit.Workers {
+        subject := "Permit Rejected: " + permit.PermitNumber
+
+        body := fmt.Sprintf(
+            "Halo %s,\r\n\r\nPermit Anda dengan nomor %s telah DITOLAK.\r\n",
+            worker.Name,
+            permit.PermitNumber,
+        )
+        body += fmt.Sprintf("Alasan Penolakan: %s\r\n", approval.Note)
+        body += "\r\nSilakan lengkapi data atau ajukan ulang.\r\n\r\nTerima kasih."
+
+        if err := utils.SendEmail(worker.Email, subject, body); err != nil {
+            fmt.Println("Gagal kirim email reject:", err)
+        } else {
+            fmt.Println("Email reject berhasil dikirim ke:", worker.Email)
+        }
+    }
+}
